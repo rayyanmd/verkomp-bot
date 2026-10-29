@@ -3,39 +3,59 @@
  * https://developers.cloudflare.com/workers/wrangler/configuration/
  */
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "verkomp-bot",
-	"main": "src/index.ts",
-	"compatibility_date": "2026-10-23",
-	"assets": {
-		"binding": "ASSETS",
-		"directory": "./public"
-	},
-	"observability": {
-		"enabled": true
-	},
-	"upload_source_maps": true
-	/**
-	 * Smart Placement
-	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
-	 */
-	// "placement": {  "mode": "smart" }
-	/**
-	 * Bindings
-	 * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
-	 * databases, object storage, AI inference, real-time communication and more.
-	 * https://developers.cloudflare.com/workers/runtime-apis/bindings/
-	 */
-	/**
-	 * Environment Variables
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
-	 * Note: Use secrets to store sensitive data.
-	 * https://developers.cloudflare.com/workers/configuration/secrets/
-	 */
-	// "vars": {  "MY_VARIABLE": "production_value" }
-	/**
-	 * Service Bindings (communicate between multiple Workers)
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
-	 */
-	// "services": [  {   "binding": "MY_SERVICE",   "service": "my-service"  } ]
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "verkomp-bot",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-23",
+  "observability": {
+    "enabled": true,
+  },
+  "upload_source_maps": true,
+  /**
+   * Smart Placement
+   * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
+   */
+  // "placement": {  "mode": "smart" }
+  /**
+   * Bindings
+   * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
+   * databases, object storage, AI inference, real-time communication and more.
+   * https://developers.cloudflare.com/workers/runtime-apis/bindings/
+   */
+  /**
+   * Environment Variables
+   * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
+   * Note: Use secrets to store sensitive data.
+   * https://developers.cloudflare.com/workers/configuration/secrets/
+   */
+  "vars": {
+    "VERIFIED_ROLE_ID": "1565338762295382078",
+    "WELCOME_CHANNEL_ID": "1565362155686207550",
+    "CLASS_ROLES": {
+      "SS12": "1565348003609321522",
+      "SS13": "1565348140389896353",
+      "SS14": "1565348130650849422",
+      "SS15": "1565348215228989500",
+      "SS16": "1565348246031700008",
+      "SS17": "1565348303367962734",
+      "SS18": "1565348274620072037",
+      "SS19": "1565348353443758180",
+      "SS20": "1565348393520332820",
+      "SS21": "1565348424059191296",
+      "SS22": "1565348450176999516",
+      "SS23": "1565348476966150224",
+      "SS24": "1565348505600401489",
+    },
+  },
+  "kv_namespaces": [
+    {
+      "binding": "VERIFIED",
+      "id": "9f71182330f147039dd29d2c23d02354",
+    },
+  ],
+  /**
+   * Service Bindings (communicate between multiple Workers)
+   * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
+   */
+  // "services": [  {   "binding": "MY_SERVICE",   "service": "my-service"  } ]
 }

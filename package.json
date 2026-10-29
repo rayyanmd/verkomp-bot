@@ -1,16 +1,20 @@
 {
-	"name": "verkomp-bot",
-	"type": "module",
-	"scripts": {
-		"dev": "wrangler dev",
-		"deploy": "wrangler deploy --minify",
-		"cf-typegen": "wrangler types --env-interface CloudflareBindings"
-	},
-	"dependencies": {
-		"hono": "^4.13.14"
-	},
-	"devDependencies": {
-		"@types/node": "^26.6.6",
-		"wrangler": "^4.155.0"
-	}
+  "name": "verkomp-bot",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "register": "tsx --env-file=.dev.vars scripts/register-commands.ts",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+  },
+  "dependencies": {
+    "discord-api-types": "^0.38.57",
+    "discord-interactions": "^4.4.0",
+    "hono": "^4.13.14"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "wrangler": "^4.155.0"
+  }
 }
