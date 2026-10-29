@@ -1,6 +1,7 @@
 export interface Env {
   DISCORD_PUBLIC_KEY: string;
   DISCORD_BOT_TOKEN: string;
+  ADMIN_SECRET: string;
   VERIFIED_ROLE_ID: string;
   WELCOME_CHANNEL_ID: string;
   CLASS_ROLES: string; // JSON: {"A":"roleId","B":"roleId"}

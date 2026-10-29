@@ -1,4 +1,4 @@
-import type { Env } from "./discord";
+import type { Env } from "../discord";
 
 export interface Student {
   student_id: string;
@@ -74,15 +74,24 @@ const CACHE_TTL_MS = 60_000;
 
 let cache: { map: Map<string, Student>; at: number } | undefined;
 
-export async function findStudent(
-  env: Env,
-  nim: string,
-): Promise<Student | undefined> {
+async function getStudents(env: Env): Promise<Map<string, Student>> {
   if (!cache || Date.now() - cache.at > CACHE_TTL_MS) {
     const text = await env.VERIFIED.get(KV_KEY);
     if (!text)
       throw new Error(`Data mahasiswa belum diunggah ke KV (key "${KV_KEY}")`);
     cache = { map: parse(text), at: Date.now() };
   }
-  return cache.map.get(nim.trim());
+  return cache.map;
+}
+
+export async function findStudent(
+  env: Env,
+  nim: string,
+): Promise<Student | undefined> {
+  const students = await getStudents(env);
+  return students.get(nim.trim());
+}
+
+export async function listStudents(env: Env): Promise<Student[]> {
+  return [...(await getStudents(env)).values()];
 }

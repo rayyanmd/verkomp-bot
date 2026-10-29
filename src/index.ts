@@ -11,7 +11,8 @@ import {
   type APIModalSubmitInteraction,
 } from "discord-api-types/v10";
 import { discordApi, type Env } from "./discord";
-import { verifyAndReply } from "./verify";
+import { verifyAndReply } from "./functions/verify";
+import { listStudents } from "./utils/students";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -29,7 +30,7 @@ function getModalValue(i: APIModalSubmitInteraction, customId: string): string {
   return "";
 }
 
-app.get("/", (c) => c.text("Bot verifikasi aktif."));
+app.get("/", (c) => c.text("Verkomp Bot Active"));
 
 app.post("/", async (c) => {
   const signature = c.req.header("X-Signature-Ed25519");
@@ -132,6 +133,53 @@ app.post("/", async (c) => {
 
     default:
       return c.text("Unsupported interaction", 400);
+  }
+});
+
+app.get("/yang-belum-masuk", async (c) => {
+  const key = c.req.query("key");
+  if (!c.env.ADMIN_SECRET || !key || key !== c.env.ADMIN_SECRET) {
+    return c.text("Unauthorized", 401);
+  }
+
+  try {
+    const students = await listStudents(c.env);
+    const unverified = (
+      await Promise.all(
+        students.map(async (student) => {
+          const verified = await c.env.VERIFIED.get(
+            `nim:${student.student_id}`,
+          );
+          return verified ? undefined : student;
+        }),
+      )
+    ).filter((student): student is NonNullable<typeof student> => !!student);
+
+    const byClass = new Map<string, typeof unverified>();
+    for (const student of unverified) {
+      const studentsInClass = byClass.get(student.class) ?? [];
+      studentsInClass.push(student);
+      byClass.set(student.class, studentsInClass);
+    }
+
+    const lines = [...byClass.entries()]
+      .sort(([classA], [classB]) => classA.localeCompare(classB))
+      .flatMap(([className, studentsInClass]) => [
+        `Kelas ${className}`,
+        ...studentsInClass.map(
+          (student) => `${student.student_id} - ${student.name}`,
+        ),
+        "",
+      ]);
+
+    return c.text(
+      lines.length > 0
+        ? lines.join("\n").trimEnd()
+        : "Semua mahasiswa sudah terverifikasi.",
+    );
+  } catch (err) {
+    console.error("Gagal mengambil daftar mahasiswa yang belum masuk:", err);
+    return c.text("Terjadi kesalahan saat mengambil daftar mahasiswa.", 500);
   }
 });
 

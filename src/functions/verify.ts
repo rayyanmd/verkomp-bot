@@ -1,6 +1,6 @@
 import type { APIModalSubmitInteraction } from "discord-api-types/v10";
-import { discordApi, editOriginalResponse, type Env } from "./discord";
-import { findStudent } from "./students";
+import { discordApi, editOriginalResponse, type Env } from "../discord";
+import { findStudent } from "../utils/students";
 
 async function runVerification(
   env: Env,
