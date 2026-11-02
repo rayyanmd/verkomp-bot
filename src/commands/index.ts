@@ -1,6 +1,8 @@
 import setupVerification from "./setup-verification";
 import setupRole from "./setup-role";
 import setupRules from "./setup-rules";
+import whoIs from "./who-is";
+import { ApplicationCommandOptionType } from "discord-api-types/v10";
 
 export const commands = [
   {
@@ -23,6 +25,19 @@ export const commands = [
     default_member_permissions: "8", // Administrator
     dm_permission: false,
     execute: setupRules,
+  },
+  {
+    name: "who-is",
+    description: "Tampilkan nama dan kelas user yang terverifikasi",
+    options: [
+      {
+        name: "user",
+        description: "User Discord yang ingin dicari",
+        type: ApplicationCommandOptionType.User,
+        required: true,
+      },
+    ],
+    execute: whoIs,
   },
 ] as const;
 
