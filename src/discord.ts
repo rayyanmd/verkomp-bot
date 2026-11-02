@@ -5,6 +5,7 @@ export interface Env {
   VERIFIED_ROLE_ID: string;
   WELCOME_CHANNEL_ID: string;
   CLASS_ROLES: string; // JSON: {"A":"roleId","B":"roleId"}
+  ROLES: Record<string, { emoji: string; id: string }>;
   VERIFIED: KVNamespace;
 }
 

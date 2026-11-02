@@ -1,34 +1,18 @@
 import { Hono } from "hono";
 import { verifyKey } from "discord-interactions";
 import {
-  ButtonStyle,
-  ComponentType,
   InteractionResponseType,
   InteractionType,
-  MessageFlags,
-  TextInputStyle,
   type APIInteraction,
-  type APIModalSubmitInteraction,
 } from "discord-api-types/v10";
-import { discordApi, type Env } from "./discord";
-import { verifyAndReply } from "./functions/verify";
-import { listStudents } from "./utils/students";
+import { type Env } from "./discord";
+import { listStudents } from "./lib/students";
+import { ephemeral } from "./lib/utils";
+import { commands } from "./commands/index";
+import { components } from "./components/index";
+import { modals } from "./modals/index";
 
 const app = new Hono<{ Bindings: Env }>();
-
-const ephemeral = (content: string) => ({
-  type: InteractionResponseType.ChannelMessageWithSource,
-  data: { content, flags: MessageFlags.Ephemeral },
-});
-
-function getModalValue(i: APIModalSubmitInteraction, customId: string): string {
-  for (const row of i.data.components as any[]) {
-    for (const c of row.components ?? []) {
-      if (c.custom_id === customId) return String(c.value ?? "");
-    }
-  }
-  return "";
-}
 
 app.get("/", (c) => c.text("Verkomp Bot Active"));
 
@@ -52,83 +36,30 @@ app.post("/", async (c) => {
       return c.json({ type: InteractionResponseType.Pong });
 
     case InteractionType.ApplicationCommand: {
-      if (interaction.data.name !== "setup-verification") {
-        return c.json(ephemeral("Command tidak dikenal."));
-      }
-      const isAdmin =
-        (BigInt(interaction.member?.permissions ?? "0") & 8n) !== 0n;
-      if (!isAdmin)
-        return c.json(ephemeral("Hanya admin yang bisa memakai command ini."));
+      const command = commands.find(
+        (cmd) => cmd.name === interaction.data.name,
+      );
+      if (!command) return c.json(ephemeral("Command tidak dikenal."));
 
-      await discordApi(c.env, `/channels/${interaction.channel?.id}/messages`, {
-        method: "POST",
-        body: {
-          embeds: [
-            {
-              title: "✅ Verifikasi Mahasiswa",
-              description:
-                "Klik tombol di bawah, lalu masukkan **NIM** kamu untuk mendapatkan akses ke server.",
-              color: 0x5865f2,
-            },
-          ],
-          components: [
-            {
-              type: ComponentType.ActionRow,
-              components: [
-                {
-                  type: ComponentType.Button,
-                  style: ButtonStyle.Success,
-                  label: "Verifikasi",
-                  custom_id: "verify_start",
-                },
-              ],
-            },
-          ],
-        },
-      });
-      return c.json(ephemeral("Panel verifikasi berhasil dikirim."));
+      return command.execute(interaction, c);
     }
 
     case InteractionType.MessageComponent: {
-      if (interaction.data.custom_id !== "verify_start") {
-        return c.json(ephemeral("Tombol tidak dikenal."));
-      }
-      return c.json({
-        type: InteractionResponseType.Modal,
-        data: {
-          custom_id: "verify_modal",
-          title: "Verifikasi NIM",
-          components: [
-            {
-              type: ComponentType.ActionRow,
-              components: [
-                {
-                  type: ComponentType.TextInput,
-                  custom_id: "nim",
-                  label: "NIM",
-                  style: TextInputStyle.Short,
-                  min_length: 3,
-                  max_length: 20,
-                  required: true,
-                  placeholder: "Masukkan NIM kamu",
-                },
-              ],
-            },
-          ],
-        },
-      });
+      const component = components.find(
+        (handler) => handler.customId === interaction.data.custom_id,
+      );
+      if (!component) return c.json(ephemeral("Tombol tidak dikenal."));
+
+      return component.execute(interaction, c);
     }
 
     case InteractionType.ModalSubmit: {
-      if (interaction.data.custom_id !== "verify_modal") {
-        return c.json(ephemeral("Form tidak dikenal."));
-      }
-      const nim = getModalValue(interaction, "nim");
-      c.executionCtx.waitUntil(verifyAndReply(c.env, interaction, nim));
-      return c.json({
-        type: InteractionResponseType.DeferredChannelMessageWithSource,
-        data: { flags: MessageFlags.Ephemeral },
-      });
+      const modal = modals.find(
+        (handler) => handler.customId === interaction.data.custom_id,
+      );
+      if (!modal) return c.json(ephemeral("Form tidak dikenal."));
+
+      return modal.execute(interaction, c);
     }
 
     default:

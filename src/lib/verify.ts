@@ -1,6 +1,6 @@
 import type { APIModalSubmitInteraction } from "discord-api-types/v10";
 import { discordApi, editOriginalResponse, type Env } from "../discord";
-import { findStudent } from "../utils/students";
+import { findStudent } from "../lib/students";
 
 async function runVerification(
   env: Env,
@@ -63,14 +63,10 @@ async function runVerification(
         allowed_mentions: { users: [userId] },
         embeds: [
           {
-            title: "🎉 Selamat Datang!",
-            description: `Selamat bergabung di server, **${student.name}**!`,
+            title: "🎉 Selamat Datang di Discord ILKOMERrZZ'63!!",
+            description: `Selamat bersenang-senang bos **${student.name}**!`,
             color: 0x57f287,
-            fields: [
-              { name: "Nama Lengkap", value: student.name, inline: true },
-              { name: "NIM", value: student.student_id, inline: true },
-              { name: "Kelas", value: student.class, inline: true },
-            ],
+            fields: [{ name: "Kelas", value: student.class, inline: true }],
             timestamp: new Date().toISOString(),
           },
         ],
