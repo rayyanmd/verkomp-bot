@@ -69,6 +69,21 @@ function parse(csv: string): Map<string, Student> {
   return map;
 }
 
+function escapeCsv(value: string): string {
+  return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+}
+
+function serialize(students: Student[]): string {
+  return [
+    "student_id,name,class",
+    ...students.map((student) =>
+      [student.student_id, student.name, student.class]
+        .map(escapeCsv)
+        .join(","),
+    ),
+  ].join("\n");
+}
+
 const KV_KEY = "data:students";
 const CACHE_TTL_MS = 60_000;
 
@@ -94,4 +109,13 @@ export async function findStudent(
 
 export async function listStudents(env: Env): Promise<Student[]> {
   return [...(await getStudents(env)).values()];
+}
+
+export async function saveStudents(
+  env: Env,
+  students: Student[],
+): Promise<void> {
+  const map = new Map(students.map((student) => [student.student_id, student]));
+  await env.VERIFIED.put(KV_KEY, serialize([...map.values()]));
+  cache = { map, at: Date.now() };
 }

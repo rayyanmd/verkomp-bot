@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Context, Hono } from "hono";
 import { verifyKey } from "discord-interactions";
 import {
   InteractionResponseType,
@@ -6,15 +6,111 @@ import {
   type APIInteraction,
 } from "discord-api-types/v10";
 import { type Env } from "./discord";
-import { listStudents } from "./lib/students";
+import { listStudents, saveStudents, type Student } from "./lib/students";
 import { ephemeral } from "./lib/utils";
 import { commands } from "./commands/index";
 import { components } from "./components/index";
 import { modals } from "./modals/index";
+import studentsPage from "./pages/students.html";
 
 const app = new Hono<{ Bindings: Env }>();
 
+function isAdminRequest(c: Context<{ Bindings: Env }>): boolean {
+  const key = c.req.query("key");
+  return Boolean(c.env.ADMIN_SECRET && key && key === c.env.ADMIN_SECRET);
+}
+
+async function readStudent(c: Context<{ Bindings: Env }>): Promise<Student> {
+  const body = await c.req.json<Partial<Student>>();
+  const student = {
+    student_id: String(body.student_id ?? "").trim(),
+    name: String(body.name ?? "").trim(),
+    class: String(body.class ?? "").trim(),
+  };
+  if (!student.student_id || !student.name || !student.class) {
+    throw new Error("NIM, nama, dan kelas wajib diisi.");
+  }
+  return student;
+}
+
 app.get("/", (c) => c.text("Verkomp Bot Active"));
+
+app.get("/students", (c) => {
+  if (!isAdminRequest(c)) return c.text("Unauthorized", 401);
+  return c.html(studentsPage);
+});
+
+app.get("/students/api", async (c) => {
+  if (!isAdminRequest(c)) return c.json({ error: "Unauthorized" }, 401);
+  try {
+    return c.json(await listStudents(c.env));
+  } catch (error) {
+    console.error("Gagal mengambil data mahasiswa:", error);
+    return c.json({ error: "Data mahasiswa belum tersedia." }, 500);
+  }
+});
+
+app.post("/students/api", async (c) => {
+  if (!isAdminRequest(c)) return c.json({ error: "Unauthorized" }, 401);
+  try {
+    const student = await readStudent(c);
+    const students = await listStudents(c.env);
+    if (students.some((item) => item.student_id === student.student_id)) {
+      return c.json({ error: "NIM sudah terdaftar." }, 409);
+    }
+    await saveStudents(c.env, [...students, student]);
+    return c.json(student, 201);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Data tidak valid.";
+    return c.json({ error: message }, 400);
+  }
+});
+
+app.put("/students/api", async (c) => {
+  if (!isAdminRequest(c)) return c.json({ error: "Unauthorized" }, 401);
+  const originalId = c.req.query("student_id")?.trim();
+  if (!originalId) return c.json({ error: "NIM lama wajib diisi." }, 400);
+  try {
+    const student = await readStudent(c);
+    const students = await listStudents(c.env);
+    const index = students.findIndex((item) => item.student_id === originalId);
+    if (index < 0) return c.json({ error: "Mahasiswa tidak ditemukan." }, 404);
+    if (
+      student.student_id !== originalId &&
+      students.some((item) => item.student_id === student.student_id)
+    ) {
+      return c.json({ error: "NIM baru sudah terdaftar." }, 409);
+    }
+    students[index] = student;
+    await saveStudents(c.env, students);
+    return c.json(student);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Data tidak valid.";
+    return c.json({ error: message }, 400);
+  }
+});
+
+app.delete("/students/api", async (c) => {
+  if (!isAdminRequest(c)) return c.json({ error: "Unauthorized" }, 401);
+  const studentId = c.req.query("student_id")?.trim();
+  if (!studentId) return c.json({ error: "NIM wajib diisi." }, 400);
+  try {
+    const students = await listStudents(c.env);
+    const remaining = students.filter(
+      (student) => student.student_id !== studentId,
+    );
+    if (remaining.length === students.length) {
+      return c.json({ error: "Mahasiswa tidak ditemukan." }, 404);
+    }
+    await saveStudents(c.env, remaining);
+    return c.json({ ok: true });
+  } catch (error) {
+    console.error("Gagal menghapus data mahasiswa:", error);
+    return c.json({ error: "Data gagal dihapus." }, 500);
+  }
+});
 
 app.post("/", async (c) => {
   const signature = c.req.header("X-Signature-Ed25519");
