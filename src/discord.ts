@@ -7,6 +7,12 @@ export interface Env {
   CLASS_ROLES: string; // JSON: {"A":"roleId","B":"roleId"}
   ROLES: Record<string, { emoji: string; id: string }>;
   VERIFIED: KVNamespace;
+
+  // LLM Configuration
+  LLM_API_KEY?: string;
+  LLM_BASE_URL?: string; // e.g. "https://api.openai.com/v1"
+  LLM_MODEL?: string; // e.g. "gpt-4o-mini"
+  LLM_SYSTEM_PROMPT?: string;
 }
 
 const API = "https://discord.com/api/v10";
@@ -41,6 +47,18 @@ export async function editOriginalResponse(
 ): Promise<void> {
   await fetch(`${API}/webhooks/${appId}/${token}/messages/@original`, {
     method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content }),
+  });
+}
+
+export async function createFollowupMessage(
+  appId: string,
+  token: string,
+  content: string,
+): Promise<void> {
+  await fetch(`${API}/webhooks/${appId}/${token}`, {
+    method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ content }),
   });

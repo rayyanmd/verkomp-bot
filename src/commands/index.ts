@@ -2,6 +2,7 @@ import setupVerification from "./setup-verification";
 import setupRole from "./setup-role";
 import setupRules from "./setup-rules";
 import whoIs from "./who-is";
+import ask from "./ask";
 import { ApplicationCommandOptionType } from "discord-api-types/v10";
 
 export const commands = [
@@ -38,6 +39,25 @@ export const commands = [
       },
     ],
     execute: whoIs,
+  },
+  {
+    name: "ask",
+    description: "Tanya apapun ke AI chatbot",
+    options: [
+      {
+        name: "question",
+        description: "Pertanyaan yang ingin kamu tanyakan ke AI",
+        type: ApplicationCommandOptionType.String,
+        required: true,
+      },
+      {
+        name: "private",
+        description: "Kirim balasan hanya untukmu (ephemeral)?",
+        type: ApplicationCommandOptionType.Boolean,
+        required: false,
+      },
+    ],
+    execute: ask,
   },
 ] as const;
 

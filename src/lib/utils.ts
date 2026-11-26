@@ -22,3 +22,33 @@ export function getModalValue(
   }
   return "";
 }
+
+export function splitMessage(text: string, maxLength = 1950): string[] {
+  if (text.length <= maxLength) return [text];
+
+  const chunks: string[] = [];
+  let remaining = text;
+
+  while (remaining.length > 0) {
+    if (remaining.length <= maxLength) {
+      chunks.push(remaining);
+      break;
+    }
+
+    let splitIndex = remaining.lastIndexOf("\n\n", maxLength);
+    if (splitIndex === -1 || splitIndex < maxLength / 2) {
+      splitIndex = remaining.lastIndexOf("\n", maxLength);
+    }
+    if (splitIndex === -1 || splitIndex < maxLength / 2) {
+      splitIndex = remaining.lastIndexOf(" ", maxLength);
+    }
+    if (splitIndex === -1) {
+      splitIndex = maxLength;
+    }
+
+    chunks.push(remaining.substring(0, splitIndex).trimEnd());
+    remaining = remaining.substring(splitIndex).trimStart();
+  }
+
+  return chunks;
+}

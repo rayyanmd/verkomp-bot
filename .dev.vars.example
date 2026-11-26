@@ -6,3 +6,15 @@ DISCORD_GUILD_ID=your_discord_guild_id
 
 # Admin Secret Key for API endpoints (e.g., /yang-belum-masuk)
 ADMIN_SECRET=your_super_secret_admin_token
+
+# LLM API Configuration (Standard OpenAI-compatible API)
+# Examples:
+# - OpenAI: https://api.openai.com/v1 (model: gpt-4o-mini, gpt-4o)
+# - Groq: https://api.groq.com/openai/v1 (model: llama-3.3-70b-versatile)
+# - DeepSeek: https://api.deepseek.com/v1 (model: deepseek-chat)
+# - OpenRouter: https://openrouter.ai/api/v1 (model: openai/gpt-4o-mini)
+# - Gemini OpenAI endpoint: https://generativelanguage.googleapis.com/v1beta/openai (model: gemini-1.5-flash)
+LLM_API_KEY=your_llm_api_key_here
+LLM_BASE_URL=https://api.openai.com/v1
+LLM_MODEL=gpt-4o-mini
+LLM_SYSTEM_PROMPT="Kamu adalah Verkomp, temen ngobrol asik buat anak-anak Ilmu Komputer IPB angkatan 63 (ILKOMERrZZ'63). Gaya bicara santai dan akrab ala temen seangkatan di Dramaga. Paham kultur anak IPB (nongkrong di Bara, nugas di LSI/CCR, mabar Valo/Minecraft, sambat praktikum). Bisa diajak ngobrol apa aja mulai dari curhat, jokes, tips kuliah, sampai bantuin tugas tanpa kaku kayak robot."
